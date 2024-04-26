@@ -14,8 +14,17 @@ from llama_index.core.query_pipeline import QueryPipeline
 from llama_index.agent.openai import OpenAIAgent
 #from llama_index.llms.openai_like import OpenAILike
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
+import os
+from llama_index.llms.openai import OpenAI
+from llama_index.core.agent import ReActAgent
 
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
+# Retrieve the OpenAI API key from the environment
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 class LlamaIndex:
     def __init__(self):
@@ -48,55 +57,47 @@ class LlamaIndex:
     
     
     def save_emb(self, documents, persist_dir):
-        nodes = self.build_index(documents)
+        index = self.build_index(documents)
+        
         storage_context = StorageContext.from_defaults(
             docstore=SimpleDocumentStore(),
             vector_store=SimpleVectorStore(),
             index_store=SimpleIndexStore(),
         )
-        storage_context.persist(persist_dir=persist_dir)
+        index.storage_context.persist(persist_dir=persist_dir)
     
-    def load_emb(self, persist_dir):
-        storage_context = StorageContext.from_defaults(
-            docstore=SimpleDocumentStore.from_persist_dir(persist_dir=persist_dir),
-            vector_store=SimpleVectorStore.from_persist_dir(persist_dir=persist_dir),
-            index_store=SimpleIndexStore.from_persist_dir(persist_dir=persist_dir)
-        )
-        return storage_context
-    
-    def build_agent(self, llm, engine):
-        
-        tools = [
-            QueryEngineTool(
-                query_engine=engine,
-                metadata=ToolMetadata(
-                    name="lecture",
-                    description=(
-                        "Provides information about lectures."
-                    ),
-                ),
-            )
-        ]
+    def load_emb_index(self, persist_dir):
+        # storage_context = StorageContext.from_defaults(
+        #     docstore=SimpleDocumentStore.from_persist_dir(persist_dir=persist_dir),
+        #     vector_store=SimpleVectorStore.from_persist_dir(persist_dir=persist_dir),
+        #     index_store=SimpleIndexStore.from_persist_dir(persist_dir=persist_dir)
+        # )
+        index_store=SimpleIndexStore.from_persist_dir(persist_dir=persist_dir)
+        return index_store
 
-        agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True)
-        return agent
-        
+    
 llama = LlamaIndex()
 documents = llama.read_data('data/')
-llama.save_emb(documents, 'data/')
+#llama.save_emb(documents, 'storage/')
 index = llama.build_index(documents)
-
-
+#index = llama.load_emb_index('storage/')
+#print(index)
 #llm = OpenAILike(model="NousResearch/Hermes-2-Pro-Mistral-7B",api_base="http://localhost:8000/v1", api_key="fake")
+llm = OpenAI(model="gpt-3.5-turbo-0613")
 
-llm = OpenAIAgent()
+main = index.as_query_engine(similarity_top_k=3)
 
-engine = index.as_query_engine(llm = llm)
+query_engine_tools = [
+    QueryEngineTool(
+        query_engine=main,
+        metadata=ToolMetadata(
+            name="main",
+            description="Provides information the data "
+            "Use a detailed plain text question as input to the tool.",
+        ),
+    )
+]
 
+agent = ReActAgent.from_tools(query_engine_tools, llm=llm, verbose=True)
 
-#response = llm.complete("Hello World!")
-
-agent = llama.build_agent(llm=llm, engine=engine)
-
-response = agent.chat("Tell me about two celebrities from the United States. ")
-print(str(response))
+print(agent.chat('What do you know?'))
