@@ -8,9 +8,6 @@ from llama_index.core import (
 )
 from llama_index.core.tools import QueryEngineTool
 import os
-from dotenv import load_dotenv
-load_dotenv()
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 def read_folder(path):
     # Walk through all files in the given path and return a list of documents
@@ -28,18 +25,20 @@ def read_folder(path):
 
     return indexes, files
 
-indexes, files = read_folder('data/')
-
-llm = OpenAI(model="gpt-3.5-turbo-0613")
-
-tools = [QueryEngineTool.from_defaults(
-    indexes[i].as_query_engine(), name=f"engine_{i}", description=f"Provides information about {files[i]}"
-) for i in range(len(indexes))]
-
-agent = OpenAIAgent.from_tools(
-    tools=tools,
-    llm=llm,
-    verbose=True
-)
 
 
+def create_agent():  
+    indexes, files = read_folder('data/')
+
+    llm = OpenAI(model="gpt-3.5-turbo-0613")
+
+    tools = [QueryEngineTool.from_defaults(
+        indexes[i].as_query_engine(), name=f"engine_{i}", description=f"Provides information about {files[i]}"
+    ) for i in range(len(indexes))]
+
+    agent = OpenAIAgent.from_tools(
+        tools=tools,
+        llm=llm,
+        verbose=True
+    )
+    return agent

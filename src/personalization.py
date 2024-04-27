@@ -1,8 +1,22 @@
 from pydantic import BaseModel, Field
+
+from llama_index.program.openai import OpenAIPydanticProgram
+from llama_index.core import ChatPromptTemplate
+from llama_index.core.llms import ChatMessage
+from llama_index.llms.openai import OpenAI
+import json
+
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
+# Retrieve the OpenAI API key from the environment
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+
+
+llm = OpenAI(model="gpt-3.5-turbo-0613")
+
 
 class Customer(BaseModel):
     """Data model for a customer behaviour."""
@@ -56,46 +70,49 @@ class Customer(BaseModel):
     CommunityInvolvement: str = Field(..., description="Level of involvement in local or online communities")
     PoliticalViews: str = Field(..., description="Political orientation or views")
 
-from llama_index.program.openai import OpenAIPydanticProgram
-from llama_index.core import ChatPromptTemplate
-from llama_index.core.llms import ChatMessage
-from llama_index.llms.openai import OpenAI
 
-prompt = ChatPromptTemplate(
-    message_templates=[
-        ChatMessage(
-            role="system",
-            content=(
-                "You are an expert assistant for summarizing and extracting personality of a user from a text. If you don't find information, leave is as an empty string."
+def get_info_customer(text):
+        
+    prompt = ChatPromptTemplate(
+        message_templates=[
+            ChatMessage(
+                role="system",
+                content=(
+                    "You are an expert assistant for summarizing and extracting personality of a user from a text. If you don't find information, leave is as an empty string."
+                ),
             ),
-        ),
-        ChatMessage(
-            role="user",
-            content=(
-                "Here is the text: \n"
-                "------\n"
-                "{text}\n"
-                "------"
+            ChatMessage(
+                role="user",
+                content=(
+                    "Here is the text: \n"
+                    "------\n"
+                    "{text}\n"
+                    "------"
+                ),
             ),
-        ),
-    ]
-)
+        ]
+    )
 
-llm = OpenAI(model="gpt-3.5-turbo-0613")
-
-program = OpenAIPydanticProgram.from_defaults(
-    output_cls=Customer,
-    llm=llm,
-    prompt=prompt,
-    verbose=True,
-)
-
-def getAttributes(description):
-    output = program(text=description)
+    program = OpenAIPydanticProgram.from_defaults(
+        output_cls=Customer,
+        llm=llm,
+        prompt=prompt,
+        verbose=True,
+    )
+    
+    output = program(text=text)
     non_empty_attributes = {k: v for k, v in output.dict().items() if v}
-    return non_empty_attributes
+    
+    index = choose_class(non_empty_attributes)
+    
+    with open('people.json') as json_file:
+        f"Given the following persona attributes:\n{non_empty_attributes}\n\n"
+        data = json.load(json_file)
+    
+    response = getPersonalizedResponse(text, non_empty_attributes, data[index])
+    
+    return response    
 
-import json
 def choose_class(persona):
     with open('people.json') as json_file:
         f"Given the following persona attributes:\n{persona}\n\n"
@@ -117,21 +134,14 @@ def choose_class(persona):
 
     return max_score_index
 
-def getPrompt(description): # Construct a prompt using the non_empty_attributes and potential class attributes
-    class_index = choose_class(getAttributes(description=description))
-    with open('people.json') as json_file:
-        people_classes = json.load(json_file)
-        chosen_class_attributes = people_classes[class_index]
-    return chosen_class_attributes
-
-def getPersonalizedResponse(query, description):
+def getPersonalizedResponse(query, description, persona_class):
     prompt = (
-        f"Given the persona:\n{getAttributes(description)}\n\n"
-        f"And the closest possible persona:\n{getPrompt(description)}\n\n"
+        f"Given the persona:\n{description}\n\n"
+        f"And the closest possible persona:\n{persona_class}\n\n"
         "Adjust your behaviour based on the conversation with available attributes. Your main target is to make the user buy electrical vehicles."
         f"Here is the user query: \n{query}\n"
     )
     return llm.complete(prompt).text
 
-if __name__ == '__main__':
-    print("second")
+
+print(get_info_customer("Hi, my name is Brian"))
