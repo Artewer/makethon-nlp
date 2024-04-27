@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
+import second
+
 load_dotenv()
 # Retrieve the OpenAI API key from the environment
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
@@ -48,6 +50,7 @@ agent = OpenAIAgent.from_tools(
     verbose=True
 )
 
+host="0.0.0.0"
 socket = 8000
 
 app = FastAPI()
@@ -65,9 +68,5 @@ async def websocket_endpoint(websocket: WebSocket):
 
 import uvicorn
 
-host="0.0.0.0"
-port=8000
-#app_name="app.main:app"
-
 if __name__ == '__main__':
-    uvicorn.run(app, host=host, port=port)
+    uvicorn.run(app, host=host, port=socket)
