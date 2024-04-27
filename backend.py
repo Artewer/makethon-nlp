@@ -63,15 +63,11 @@ async def websocket_endpoint(websocket: WebSocket):
         data = await websocket.receive_text()
         await websocket.send_text(f"ShalopAI: {agent.chat(data).response}")
 
-NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")
-
-from pyngrok import ngrok
-# register on ngrok.com and get a token here: https://dashboard.ngrok.com/get-started/your-authtoken
-# put it then in .env under NGROK_AUTH_TOKEN
-ngrok_tunnel = ngrok.connect(socket)
-
-import nest_asyncio
 import uvicorn
 
-nest_asyncio.apply()
-uvicorn.run(app, port=socket)
+host="0.0.0.0"
+port=8000
+#app_name="app.main:app"
+
+if __name__ == '__main__':
+    uvicorn.run(app, host=host, port=port)
