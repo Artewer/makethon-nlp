@@ -40,6 +40,7 @@ async def get():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    ask_data_bool = False
     while True:
         try:
             data = await websocket.receive_text()
@@ -52,9 +53,11 @@ async def websocket_endpoint(websocket: WebSocket):
             f"Here is the user query: \n{data}\n"
             )
             await manager.send_text(agent.chat(prompt).response, websocket)
-            ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
-            await manager.send_text(agent.chat(ask_prompt).response, websocket)
-            await manager.send_text(getFollowupQuestions(query=data, answer=prompt), websocket)
+            if not ask_data_bool:
+                ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
+                await manager.send_text(agent.chat(ask_prompt).response, websocket)
+                ask_data_bool = True
+            await manager.send_json(getFollowupQuestions(query=data, answer=prompt), websocket)
         except WebSocketDisconnect:
                 manager.disconnect(websocket)
                 # Reset all values in person.json to empty strings
