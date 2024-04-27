@@ -41,4 +41,5 @@ def create_agent():
         llm=llm,
         verbose=True
     )
+    print(agent)
     return agent

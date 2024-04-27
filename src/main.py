@@ -44,10 +44,10 @@ async def websocket_endpoint(websocket: WebSocket):
         f"Here is a possible characteristic of a person:\n{class_persona}\n\n"
         f"Here is the user query: \n{data}\n"
         )
-        await websocket.send_text(f"ShalopAI: {agent.chat(prompt).response}")
-        ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
-        await websocket.send_text(agent.chat(ask_prompt).response)
-        await websocket.send_text(getFollowupQuestions(query=data, answer=prompt))
+        await websocket.send_text(agent.chat(prompt).response)
+        #ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
+        #await websocket.send_text(agent.chat(ask_prompt).response)
+        #await websocket.send_text(getFollowupQuestions(query=data, answer=prompt))
     
 
 if __name__ == '__main__':

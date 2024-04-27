@@ -1,7 +1,7 @@
 from llama_index.llms.openai import OpenAI
 from llama_index.core.chat_engine import SimpleChatEngine
 
-llm = OpenAI(model='gpt-3.5-turbo-0613')
+llm = OpenAI(model='gpt-4-turbo')
 
 def getFollowupQuestions(query, answer):
     prompt = f"Given the query '{query}' and the answer is '{answer}'. What follow-up questions might a user have? Only write a question:"

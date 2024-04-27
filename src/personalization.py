@@ -15,7 +15,7 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 
 
-llm = OpenAI(model="gpt-3.5-turbo-0613")
+llm = OpenAI(model="gpt-4-turbo")
 
 
 class Customer(BaseModel):
@@ -151,4 +151,4 @@ def getPersonalizedResponse(query, description, persona_class):
     return llm.complete(prompt).text
 
 
-print(get_info_customer("Hi, my name is Brian"))
+#print(get_info_customer("Hi, my name is Brian"))
