@@ -9,6 +9,9 @@ from llama_index.core import (
 from llama_index.core.tools import QueryEngineTool
 import os
 
+llm = OpenAI(model="gpt-4-turbo")
+
+
 def read_folder(path):
     # Walk through all files in the given path and return a list of documents
     documents = []
@@ -29,8 +32,6 @@ def read_folder(path):
 
 def create_agent():  
     indexes, files = read_folder('data/')
-
-    llm = OpenAI(model="gpt-3.5-turbo-0613")
 
     tools = [QueryEngineTool.from_defaults(
         indexes[i].as_query_engine(), name=f"engine_{i}", description=f"Provides information about {files[i]}"

@@ -45,10 +45,10 @@ async def websocket_endpoint(websocket: WebSocket):
         f"Here is the user query: \n{data}\n"
         )
         await websocket.send_text(agent.chat(prompt).response)
-        #ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
-        #await websocket.send_text(agent.chat(ask_prompt).response)
-        #await websocket.send_text(getFollowupQuestions(query=data, answer=prompt))
-    
+        ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
+        await websocket.send_text(agent.chat(ask_prompt).response)
+        await websocket.send_text(getFollowupQuestions(query=data, answer=prompt))
+
 
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8080)

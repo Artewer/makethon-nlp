@@ -103,9 +103,28 @@ def get_info_customer(text):
     output = program(text=text)
     non_empty_attributes = {k: v for k, v in output.dict().items() if v}
     
+    # Load existing data from 'person.json' and update it with non_empty_attributes
+    with open('person.json', 'r') as json_file:
+        try:
+            data = json.load(json_file)
+        except json.JSONDecodeError:
+            data = {}
+    
+    # Merge non_empty_attributes into data without overwriting existing keys
+    for k, v in non_empty_attributes.items():
+        data[k] = v
+    data_updated = data
+    # Write the updated data back to the file
+    with open('person.json', 'w') as json_file:
+        json.dump(data_updated, json_file, indent=4)
+        
+    
+    print(data_updated)
+    non_empty_attributes = {k: v for k, v in data_updated.items() if v}
+    
+    
     if len(non_empty_attributes) == 0:
-        #
-        return "No data", "No data"
+        return "No Data", "No Data"
     
     index = choose_class(non_empty_attributes)
     
