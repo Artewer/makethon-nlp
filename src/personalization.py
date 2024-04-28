@@ -20,7 +20,7 @@ llm = OpenAI(model="gpt-4-turbo")
 
 class Customer(BaseModel):
     """Data model for a customer behaviour."""
-    Name: str = Field(..., description="Name of the customer")
+    PersonalName: str = Field(..., description="Name of the customer")
     Type: str = Field(..., description="Type of the customer profile")
     Country: str = Field(..., description="Country")
     Age: str = Field(..., description="Age of the customers")
@@ -78,7 +78,7 @@ def get_info_customer(text):
             ChatMessage(
                 role="system",
                 content=(
-                    "You are an expert assistant for summarizing and extracting personality of a user from a text. If you don't find information, leave is as an empty string."
+                    "You are an expert assistant for summarizing and extracting personality of a user from a text. If you don't find information, leave it as an empty string."
                 ),
             ),
             ChatMessage(
@@ -125,6 +125,10 @@ def get_info_customer(text):
     
     if len(non_empty_attributes) == 0:
         return "No Data", "No Data"
+    
+    for i in non_empty_attributes:
+        if not i.isdigit():
+            return non_empty_attributes, "No Data"
     
     index = choose_class(non_empty_attributes)
     
