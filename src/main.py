@@ -57,7 +57,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 ask_prompt = "Ask one question to find out what are the user's preferences in electric vehicles"
                 await manager.send_text(agent.chat(ask_prompt).response, websocket)
                 ask_data_bool = True
-            await manager.send_json(getFollowupQuestions(query=data, answer=prompt), websocket)
+            await manager.send_text(getFollowupQuestions(query=data, answer=prompt), websocket)
         except WebSocketDisconnect:
                 manager.disconnect(websocket)
                 # Reset all values in person.json to empty strings
@@ -76,6 +76,7 @@ async def websocket_endpoint_new(websocket: WebSocket):
         try:
             data = await websocket.receive_text()
             await manager.send_text('hello world', websocket)
+            # await manager.send_text(getFollowupQuestions(''), websocket)
         except WebSocketDisconnect:
                 manager.disconnect(websocket)
 

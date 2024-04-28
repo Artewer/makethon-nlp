@@ -12,9 +12,6 @@ class ConnectionChatManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_json(self, message: str, websocket: WebSocket):
-        await websocket.send_json({"message": message})
-
     async def send_text(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
